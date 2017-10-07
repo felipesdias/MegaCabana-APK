@@ -13,6 +13,17 @@ require(`quasar/dist/quasar.${__THEME}.css`)
 import Vue from 'vue'
 import Quasar from 'quasar'
 import router from './router'
+import axios from 'axios'
+
+const ipAdress = (process.env.NODE_ENV !== 'production') ? 'http://localhost' : 'https://megacabana.ddns.net/api'
+Vue.prototype.API = axios.create({
+  baseURL: ipAdress,
+  timeout: 10000,
+  headers: {
+    'Accept': 'application/json'
+  },
+  responseType: 'json'
+})
 
 Vue.config.productionTip = false
 Vue.use(Quasar) // Install Quasar Framework
