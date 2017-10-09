@@ -15,7 +15,7 @@ import Quasar from 'quasar'
 import router from './router'
 import axios from 'axios'
 
-const ipAdress = (process.env.NODE_ENV !== 'production') ? 'http://localhost' : 'https://megacabana.ddns.net/api'
+const ipAdress = (DEV) ? 'http://192.168.1.100/api' : 'http://192.168.1.100/api'
 Vue.prototype.API = axios.create({
   baseURL: ipAdress,
   timeout: 10000,
@@ -31,6 +31,7 @@ Vue.use(Quasar) // Install Quasar Framework
 if (__THEME === 'mat') {
   require('quasar-extras/roboto-font')
 }
+import 'quasar-extras/animate'
 import 'quasar-extras/material-icons'
 // import 'quasar-extras/ionicons'
 // import 'quasar-extras/fontawesome'

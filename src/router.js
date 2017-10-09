@@ -22,9 +22,8 @@ export default new VueRouter({
    */
 
   routes: [
-    { path: '/', component: load('Hello') },
-
-    // Always leave this last one
-    { path: '*', component: load('Error404') } // Not found
+    { name: 'home', path: '/', component: load('Home') },
+    { name: 'jogos', path: '/jogos/:tipo', component: load('Jogos') },
+    { name: 'jogo', path: '/jogo/:jogo_id', component: load('Jogo') }
   ]
 })
