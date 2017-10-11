@@ -146,6 +146,10 @@ export default {
   },
   methods: {
     editaJogador (item) {
+      if (!this.$store.state.ADM) {
+        return
+      }
+
       let self = this
       let numeros = {}
       for (let i = 0; i < this.jogo.qt_numeros; i++) {
