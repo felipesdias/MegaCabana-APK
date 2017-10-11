@@ -1,9 +1,12 @@
 <template>
   <div>
     <q-toolbar color="black" class="titulo"> 
+      <q-icon name="keyboard_backspace" @click="$router.go(-1)"></q-icon>
       <q-toolbar-title>
         Jogos {{tipo}}
       </q-toolbar-title>
+      <q-icon @click="desloga" v-show="$store.state.ADM" name="exit_to_app"></q-icon>
+      <q-icon @click="login" v-show="!$store.state.ADM" name="account_circle"></q-icon>
     </q-toolbar>
 
     <div class="row justify-center">
@@ -11,26 +14,35 @@
     </div>
 
     <div class="contente column">
-      <q-btn 
-        v-for="(item, index) in jogos" 
-        class="boxJogo" 
-        push 
-        @click="redireciona (item.id)"
-        :color="getColor (index)" 
-        :key="item.id"
-      >
-        {{item.nome}}
-      </q-btn>
+      <div class="row full-width items-center boxJogo" v-for="(item, index) in jogos" :key="item.id">
+        <q-btn 
+          class="col"
+          style="padding: 15px 0px; margin-right: 15px;"
+          push 
+          @click="redireciona (item.id)"
+          :color="getColor (index)" 
+        >
+          {{item.nome}}
+        </q-btn>
+        <q-btn @click="deletar (item, index)" v-show="$store.state.ADM" small round color="red" class="float-right" push>
+          <q-icon name="delete" />
+        </q-btn>
+      </div>
     </div>
+
+    <q-btn @click="criaJogo" v-show="$store.state.ADM" round color="green" push class="absolute-bottom-right" style="margin:10px">
+      <q-icon size='60px' name="add_circle_outline" />
+    </q-btn>
+    
   </div>
 </template>
 
 <script>
-import { Toast, QBtn, QToolbar, QToolbarTitle, QSpinner } from 'quasar'
+import { LocalStorage, Toast, QBtn, QToolbar, QToolbarTitle, QSpinner, QIcon, Dialog } from 'quasar'
 
 export default {
   components: {
-    QBtn, QToolbar, QToolbarTitle, QSpinner
+    QBtn, QToolbar, QToolbarTitle, QSpinner, QIcon
   },
   data () {
     return {
@@ -50,13 +62,94 @@ export default {
     this.getJogos(this.tipo)
   },
   methods: {
+    deletar (jogo, index) {
+      let self = this
+      Dialog.create({
+        title: 'Excluir jogo',
+        message: 'Você tem certeza que deseja excluir o jogo "' + jogo.nome + '" ?',
+        buttons: [
+          {
+            label: 'Cancelar'
+          },
+          {
+            label: 'Excluir',
+            handler () {
+              self.API.delete('/deletaJogo/' + jogo.id)
+                .then((response) => {
+                  Toast.create.positive('Jogo excluido com sucesso!')
+                  self.jogos.splice(index, 1)
+                })
+                .catch(() => {
+                  Toast.create.negative('Erro ao excluir jogo')
+                })
+            }
+          }
+        ]
+      })
+    },
+    criaJogo () {
+      let self = this
+      let titulo
+      let tipo
+      if (this.tipo === 'semanais') {
+        titulo = 'Jogo semanal'
+        tipo = 0
+      }
+      else {
+        titulo = 'Jogo mensal'
+        tipo = 1
+      }
+      Dialog.create({
+        title: titulo,
+        message: 'Digite o nome:',
+        form: {
+          nome: {
+            type: 'text',
+            label: 'Nome do Jogo',
+            model: ''
+          },
+          qt_numeros: {
+            type: 'number',
+            label: 'Quantidade de números',
+            model: 10
+          }
+        },
+        buttons: [
+          {
+            label: 'Cancelar'
+          },
+          {
+            label: 'Criar',
+            color: 'positive',
+            handler (data) {
+              self.API.post('/criarJogo', {tipo: tipo, nome: data.nome, qt_numeros: data.qt_numeros})
+                .then((response) => {
+                  Toast.create.positive('Jogo criado com sucesso!')
+                  self.jogos.unshift(response.data.data)
+                })
+                .catch((error) => {
+                  if (error.response.status === 422) {
+                    Toast.create(error.response.data.errors.message[0])
+                  }
+                  else {
+                    Toast.create.negative('Falha ao criar jogo')
+                  }
+                })
+            }
+          }
+        ]
+      })
+    },
+    desloga () {
+      this.$store.commit('desloga')
+    },
     getColor (id) {
       return (id % 2 === 0) ? 'primary' : 'secondary'
     },
     redireciona (id) {
       return setTimeout(() => {
         this.$router.push('/jogo/' + id)
-      }, 250)
+      }, 175)
     },
     getJogos (tipo) {
       let num
@@ -78,6 +171,42 @@ export default {
           html: 'Erro de conexão'
         })
       })
+    },
+    login () {
+      if (LocalStorage.get.item('logado')) {
+        Toast.create.positive('Modo Administrador!')
+        this.$store.commit('loga')
+        return
+      }
+
+      let self = this
+      Dialog.create({
+        title: 'Autenticação',
+        message: 'Digite a senha:',
+        form: {
+          senha: {
+            type: 'password',
+            label: 'Senha',
+            model: ''
+          }
+        },
+        buttons: [
+          'Cancel',
+          {
+            label: 'Ok',
+            handler (data) {
+              if (data.senha === 'd36g483') {
+                Toast.create.positive('Modo Administrador!')
+                self.$store.commit('loga')
+                LocalStorage.set('logado', true)
+              }
+              else {
+                Toast.create.negative('Senha incorreta!')
+              }
+            }
+          }
+        ]
+      })
     }
   }
 }
@@ -94,7 +223,6 @@ export default {
   }
 
   .boxJogo {
-    padding: 15px 0px;
     margin-bottom: 10px;
   }
 </style>

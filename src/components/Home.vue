@@ -5,6 +5,9 @@
       <q-toolbar-title>
         Amigos da Cabana
       </q-toolbar-title>
+      <q-icon @click="desloga" v-show="$store.state.ADM" name="exit_to_app"></q-icon>
+      <q-icon @click="login" v-show="!$store.state.ADM" name="account_circle"></q-icon>
+      
     </q-toolbar>
     <div class="column">
       <q-btn @click="redireciona('semanais')" class="botao" color="primary" push>
@@ -18,11 +21,11 @@
 </template>
 
 <script>
-import { QBtn, QToolbar, QToolbarTitle } from 'quasar'
+import { QBtn, QToolbar, QToolbarTitle, Dialog, Toast, QIcon, LocalStorage } from 'quasar'
 
 export default {
   components: {
-    QBtn, QToolbar, QToolbarTitle
+    QBtn, QToolbar, QToolbarTitle, QIcon
   },
   data () {
     return {
@@ -32,7 +35,46 @@ export default {
     redireciona (tipo) {
       return setTimeout(() => {
         this.$router.push('/jogos/' + tipo)
-      }, 250)
+      }, 175)
+    },
+    desloga () {
+      this.$store.commit('desloga')
+    },
+    login () {
+      if (LocalStorage.get.item('logado')) {
+        Toast.create.positive('Modo Administrador!')
+        this.$store.commit('loga')
+        return
+      }
+
+      let self = this
+      Dialog.create({
+        title: 'Autenticação',
+        message: 'Digite a senha:',
+        form: {
+          senha: {
+            type: 'password',
+            label: 'Senha',
+            model: ''
+          }
+        },
+        buttons: [
+          'Cancel',
+          {
+            label: 'Ok',
+            handler (data) {
+              if (data.senha === 'd36g483') {
+                Toast.create.positive('Modo Administrador!')
+                self.$store.commit('loga')
+                LocalStorage.set('logado', true)
+              }
+              else {
+                Toast.create.negative('Senha incorreta!')
+              }
+            }
+          }
+        ]
+      })
     }
   }
 }

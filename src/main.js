@@ -14,6 +14,7 @@ import Vue from 'vue'
 import Quasar from 'quasar'
 import router from './router'
 import axios from 'axios'
+import Vuex from 'vuex'
 
 const ipAdress = (DEV) ? 'http://192.168.1.100/api' : 'http://192.168.1.100/api'
 Vue.prototype.API = axios.create({
@@ -23,6 +24,22 @@ Vue.prototype.API = axios.create({
     'Accept': 'application/json'
   },
   responseType: 'json'
+})
+
+Vue.use(Vuex)
+
+const store = new Vuex.Store({
+  state: {
+    ADM: false
+  },
+  mutations: {
+    loga (state) {
+      state.ADM = true
+    },
+    desloga (state) {
+      state.ADM = false
+    }
+  }
 })
 
 Vue.config.productionTip = false
@@ -42,6 +59,7 @@ Quasar.start(() => {
   new Vue({
     el: '#q-app',
     router,
+    store,
     render: h => h(require('./App').default)
   })
 })
