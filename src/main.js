@@ -16,7 +16,7 @@ import router from './router'
 import axios from 'axios'
 import Vuex from 'vuex'
 
-const ipAdress = (DEV) ? 'http://192.168.1.100/api' : 'http://192.168.1.100/api'
+const ipAdress = (DEV) ? 'http://192.168.1.100/api' : 'http://tsvicosa.ddns.net/api'
 Vue.prototype.API = axios.create({
   baseURL: ipAdress,
   timeout: 10000,
