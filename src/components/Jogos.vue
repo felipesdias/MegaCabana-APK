@@ -30,8 +30,8 @@
       </div>
     </div>
 
-    <q-btn @click="criaJogo" v-show="$store.state.ADM" round color="green" push class="absolute-bottom-right" style="margin:10px">
-      <q-icon size='60px' name="add_circle_outline" />
+    <q-btn @click="criaJogo" v-show="$store.state.ADM" round color="green" push class="absolute-bottom-right" style="margin:10px; font-size: 40px;">
+      +
     </q-btn>
     
   </div>
