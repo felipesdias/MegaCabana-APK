@@ -1,12 +1,12 @@
 <template>
   <div>
     <q-toolbar color="black" class="titulo">
-      <q-icon name="keyboard_backspace" @click="$router.go(-1)"></q-icon>
+      <q-btn @click.prevent="$router.go(-1)" icon="keyboard_backspace"></q-btn>
       <q-toolbar-title>
         {{jogo.nome}}
       </q-toolbar-title>
-      <q-icon @click="desloga" v-show="$store.state.ADM" name="exit_to_app"></q-icon>
-      <q-icon @click="login" v-show="!$store.state.ADM" name="account_circle"></q-icon>
+      <q-btn @click.prevent="desloga" v-show="$store.state.ADM" icon="exit_to_app"></q-btn>
+      <q-btn @click.prevent="login" v-show="!$store.state.ADM" icon="account_circle"></q-btn>
     </q-toolbar>
     
     <q-search :debounce="600" @change="filtra" placeholder="Buscar" v-model="search" style="margin: 0px 15px"/>
@@ -15,7 +15,7 @@
       <q-btn
         push
         small
-        @click="expansao ()"
+        @click.prevent="expansao ()"
       >
         {{aberto ? 'Fechar' : 'Abrir'}} Todos
       </q-btn>
@@ -23,7 +23,7 @@
       <q-btn
         push
         small
-        @click="abrirResult = !abrirResult"
+        @click.prevent="abrirResult = !abrirResult"
       >
         Resultados
       </q-btn>
@@ -33,7 +33,7 @@
       <q-btn
         push
         small
-        @click="addJogo"
+        @click.prevent="addJogo"
       >
         Adicionar Jogador
       </q-btn>
@@ -41,7 +41,7 @@
       <q-btn
         push
         small
-        @click="addSorteio"
+        @click.prevent="$refs.pergData.open()"
       >
         Adicionar Sorteio
       </q-btn>
@@ -49,9 +49,9 @@
 
     <q-slide-transition>
       <div v-show="abrirResult" style="margin: 10px; box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 0px 1px;">
-        <table class="q-table full-width compact horizontal-separator" style="padding: 0px 10px">
+        <table class="q-table full-width compact horizontal-separator noselect" style="padding: 0px 10px">
           <thead>
-            <tr v-for="item in jogo.sorteios" :key="item.id">
+            <tr v-for="item in jogo.sorteios" :key="item.id" v-touch-hold="() => {if(!travado2) { xampson(item) }}">
               <th style="border-left: 0px!important">
                 {{parseData(item.data)}}
               </th>
@@ -64,37 +64,38 @@
       </div>
     </q-slide-transition>
 
-    <table class="q-table compact full-width vertical-separator" style="box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.28);">
+    <table class="q-table compact full-width vertical-separator noselect" style="box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.28);">
       <thead>
         <tr style="background: #fc9c00">
-          <th style="width: 29px" class="separator" @click="ordenacao.n = !ordenacao.n; ordena('numero', ordenacao.n)">
+          <th style="width: 29px" class="separator" @click.prevent="ordenacao.n = !ordenacao.n; ordena('numero', ordenacao.n)">
             Nº
           </th>
-          <th class="separator text-center" @click="ordenacao.nome = !ordenacao.nome; ordena('nome', ordenacao.nome)">
+          <th class="separator text-center" @click.prevent="ordenacao.nome = !ordenacao.nome; ordena('nome', ordenacao.nome)">
             NOME {{(aberto) ? '/JOGO' : ''}}
           </th>
-          <th style="width: 41px" class="separator bordaFim" @click="ordenacao.acertos = !ordenacao.acertos; ordena('acertos', ordenacao.acertos)">
+          <th style="width: 41px" class="separator bordaFim" @click.prevent="ordenacao.acertos = !ordenacao.acertos; ordena('acertos', ordenacao.acertos)">
             TOT
           </th>
         </tr>
       </thead>
 
-
-      <tbody v-touch-hold="() => {editaJogador (item)}" v-for="(item, index) in jogos" :key="item.id" class="separator">
-        <tr :class="{trocaFundo: (index%2 == 0), trocaFundo2: (index%2 == 1)}" @click="item.mostra = !item.mostra">
+      <tbody v-touch-hold="() => {if(!travado) { editaJogador (item)}}" v-for="(item, index) in jogos" :key="item.id" class="separator" @click.prevent="item.mostra = !item.mostra">
+        <tr :class="{trocaFundo: (index%2 == 0), trocaFundo2: (index%2 == 1)}">
           <td class="text-center"> {{item.numero}} </td>
           <td> {{item.nome}} </td>
           <td class="text-center bordaFim"> {{item.acertos}} </td>
         </tr>
-        <tr v-show="item.mostra" style="height: 23px">
+        <tr style="height: 23px">
           <td :class="{trocaFundo: (index%2 == 0), trocaFundo2: (index%2 == 1)}"></td>
-          <td :class="{trocaFundo: (index%2 == 0), trocaFundo2: (index%2 == 1), separator: false}" style="padding-left: 0px;"> 
-            <div class="row" style="font-size: 13px;">
-              <div class="col text-right" v-for="i in jogo.qt_numeros" :key="i" :class="{acertou: resultados[item['_' + (i-1)]]}">
-                {{item['_' + (i-1)]}}
-              </div>
-            </div>
-          </td>
+            <td :class="{trocaFundo: (index%2 == 0), trocaFundo2: (index%2 == 1), separator: false}" style="padding-left: 0px;"> 
+              <q-transition enter="fadeIn" leave="fadeOut">
+                <div class="row" style="font-size: 13px;" v-show="item.mostra">
+                  <div class="col text-right" v-for="i in jogo.qt_numeros" :key="i" :class="{acertou: resultados[item['_' + (i-1)]]}">
+                    {{item['_' + (i-1)]}}
+                  </div>
+                </div>
+              </q-transition>
+            </td>
           <td class="bordaFim" :class="{trocaFundo: (index%2 == 0), trocaFundo2: (index%2 == 1)}"></td>
         </tr>
       </tbody>
@@ -104,17 +105,19 @@
       <q-spinner :size="50" color="blue" v-if="carregando"/>
     </div>
 
-    <q-datetime @blur="addSorteio2" v-model="dataSorteio" ref="pergData" type="date" style="display: none"/>
+    <q-datetime @blur="addSorteio" ok-label="Proximo" cancel-label="" no-clear v-model="dataSorteio" ref="pergData" type="date" style="display: none"/>
+    <q-datetime @blur="editaSorteio" ok-label="Proximo" cancel-label="" no-clear v-model="dataSorteio2" ref="pergData2" type="date" style="display: none"/>
 
   </div>
 </template>
 
 <script>
-import { TouchHold, LocalStorage, Dialog, Toast, QToolbar, QToolbarTitle, QSpinner, QDatetime, QIcon, QSearch, QSlideTransition, QBtn, QPopover, date } from 'quasar'
+import { TouchHold, LocalStorage, Dialog, Toast, QToolbar, QToolbarTitle, QSpinner, QDatetime, QIcon, QSearch, QSlideTransition, QTransition, QBtn, QPopover, date } from 'quasar'
+var moment = require('moment')
 
 export default {
   components: {
-    QToolbar, QToolbarTitle, QSpinner, QDatetime, QIcon, QSearch, QSlideTransition, QBtn, QPopover
+    QToolbar, QToolbarTitle, QSpinner, QDatetime, QIcon, QSearch, QSlideTransition, QTransition, QBtn, QPopover
   },
   directives: {
     TouchHold
@@ -135,7 +138,11 @@ export default {
       aberto: false,
       abrirResult: false,
       dataSorteio: new Date(),
-      dadosSorteio: {}
+      dataSorteio2: new Date(),
+      dadosSorteio: {},
+      dadosSorteio2: {},
+      travado: false,
+      travado2: false
     }
   },
   watch: {
@@ -145,11 +152,96 @@ export default {
     }
   },
   methods: {
+    xampson (item) {
+      if (!this.$store.state.ADM) {
+        return
+      }
+
+      this.dataSorteio2 = moment(item.data.replace('/', '-')).toDate()
+      this.$refs.pergData2.value = moment(item.data.replace('/', '-')).toDate()
+      this.travado = true
+      this.dadosSorteio2 = item
+      this.$refs.pergData2.open()
+    },
+    editaSorteio () {
+      this.travado = false
+      if (!this.$store.state.ADM) {
+        return
+      }
+
+      let numeros = {}
+      let self = this
+
+      console.log(this.dadosSorteio2)
+
+      for (let i = 0; i < 6; i++) {
+        numeros['_' + i] = {
+          type: 'number',
+          label: '' + (i + 1) + 'º número',
+          model: this.dadosSorteio2['_' + i]
+        }
+      }
+      Dialog.create({
+        title: 'Editar sorteio',
+        message: 'Informe os dados do sorteio:',
+        form: numeros,
+        buttons: [
+          {
+            label: 'Cancelar',
+            style: 'padding: 0; padding-left: 9px; padding-right: 9px;'
+          },
+          {
+            label: 'Excluir',
+            color: 'negative',
+            style: 'padding: 0; padding-left: 9px; padding-right: 9px;',
+            handler () {
+              self.API.delete('/deletaSorteio/' + self.dadosSorteio2.id)
+                .then((response) => {
+                  self.getJogo(self.jogo.id, false)
+                  Toast.create.positive('Sorteio apagado com sucesso!')
+                })
+                .catch((error) => {
+                  if (error.response.status === 422) {
+                    Toast.create(error.response.data.errors.message[0])
+                  }
+                  else {
+                    Toast.create.negative('Falha ao apagar sorteio')
+                  }
+                })
+            }
+          },
+          {
+            label: 'Salvar',
+            color: 'positive',
+            style: 'padding: 0; padding-left: 9px; padding-right: 9px;',
+            handler (data) {
+              data['data'] = date.formatDate(self.dataSorteio2, 'YYYY/MM/DD')
+              data['id'] = self.dadosSorteio2.id
+              self.API.post('/attSorteio', data)
+                .then((response) => {
+                  self.getJogo(self.jogo.id)
+                  self.abrirResult = true
+                  Toast.create.positive('Sorteio atualizado com sucesso!')
+                })
+                .catch((error) => {
+                  if (error.response.status === 422) {
+                    Toast.create(error.response.data.errors.message[0])
+                  }
+                  else {
+                    Toast.create.negative('Falha ao atualizar sorteio')
+                  }
+                })
+            }
+          }
+        ]
+      })
+    },
     editaJogador (item) {
       if (!this.$store.state.ADM) {
         return
       }
 
+      this.travado = true
       let self = this
       let numeros = {}
       for (let i = 0; i < this.jogo.qt_numeros; i++) {
@@ -162,6 +254,9 @@ export default {
       Dialog.create({
         title: 'Editar jogador',
         form: {
+          onDismiss: function () {
+            self.travado = false
+          },
           numero: {
             type: 'number',
             label: 'Número',
@@ -177,13 +272,17 @@ export default {
         buttons: [
           {
             label: 'Cancelar',
-            style: 'padding: 0; padding-left: 9px; padding-right: 9px;'
+            style: 'padding: 0; padding-left: 9px; padding-right: 9px;',
+            handler () {
+              self.travado = false
+            }
           },
           {
             label: 'Excluir',
             color: 'negative',
             style: 'padding: 0; padding-left: 9px; padding-right: 9px;',
-            handler (data) {
+            handler () {
+              self.travado = false
               self.API.delete('/deletaJogada/' + item.id)
                 .then((response) => {
                   self.getJogo(self.jogo.id, false)
@@ -204,6 +303,7 @@ export default {
             color: 'positive',
             style: 'padding: 0; padding-left: 9px; padding-right: 9px;',
             handler (data) {
+              self.travado = false
               data['id'] = item.id
               data['jogo_id'] = self.jogo.id
               self.API.post('/attJogada', data)
@@ -277,26 +377,6 @@ export default {
         ]
       })
     },
-    addSorteio2 () {
-      console.log(this.dataSorteio)
-      console.log(date.formatDate(this.dataSorteio, 'YYYY/MM/DD'))
-      this.dadosSorteio['data'] = date.formatDate(this.dataSorteio, 'YYYY/MM/DD')
-      this.dadosSorteio['jogo_id'] = this.jogo.id
-      this.API.post('/addSorteio', this.dadosSorteio)
-        .then((response) => {
-          this.getJogo(this.jogo.id)
-          this.abrirResult = true
-          Toast.create.positive('Sorteio adicionado com sucesso!')
-        })
-        .catch((error) => {
-          if (error.response.status === 422) {
-            Toast.create(error.response.data.errors.message[0])
-          }
-          else {
-            Toast.create.negative('Falha ao adicionar sorteio')
-          }
-        })
-    },
     addSorteio () {
       let numeros = {}
       let self = this
@@ -319,8 +399,24 @@ export default {
             label: 'Criar',
             color: 'positive',
             handler (data) {
-              self.dadosSorteio = data
-              self.$refs.pergData.open()
+              console.log(self.dataSorteio)
+              data['data'] = date.formatDate(self.dataSorteio, 'YYYY/MM/DD')
+              data['jogo_id'] = self.jogo.id
+              console.log(data)
+              self.API.post('/addSorteio', data)
+                .then((response) => {
+                  self.getJogo(self.jogo.id)
+                  self.abrirResult = true
+                  Toast.create.positive('Sorteio adicionado com sucesso!')
+                })
+                .catch((error) => {
+                  if (error.response.status === 422) {
+                    Toast.create(error.response.data.errors.message[0])
+                  }
+                  else {
+                    Toast.create.negative('Falha ao adicionar sorteio')
+                  }
+                })
             }
           }
         ]
@@ -494,4 +590,14 @@ export default {
   .bordaFim {
     border-right: 1px solid #fc9c00!important;
   }
+
+  .noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
 </style>

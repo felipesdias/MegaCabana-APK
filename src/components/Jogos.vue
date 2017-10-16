@@ -1,12 +1,12 @@
 <template>
   <div>
     <q-toolbar color="black" class="titulo"> 
-      <q-icon name="keyboard_backspace" @click="$router.go(-1)"></q-icon>
+      <q-btn icon="keyboard_backspace" @click.prevent="$router.go(-1)"></q-btn>
       <q-toolbar-title>
         Jogos {{tipo}}
       </q-toolbar-title>
-      <q-icon @click="desloga" v-show="$store.state.ADM" name="exit_to_app"></q-icon>
-      <q-icon @click="login" v-show="!$store.state.ADM" name="account_circle"></q-icon>
+      <q-btn @click.prevent="desloga" v-show="$store.state.ADM" icon="exit_to_app"></q-btn>
+      <q-btn @click.prevent="login" v-show="!$store.state.ADM" icon="account_circle"></q-btn>
     </q-toolbar>
 
     <div class="row justify-center">
@@ -19,18 +19,18 @@
           class="col"
           style="padding: 15px 0px; margin-right: 15px;"
           push 
-          @click="redireciona (item.id)"
+          @click.prevent="redireciona (item.id)"
           :color="getColor (index)" 
         >
           {{item.nome}}
         </q-btn>
-        <q-btn @click="deletar (item, index)" v-show="$store.state.ADM" small round color="red" class="float-right" push>
+        <q-btn @click.prevent="deletar (item, index)" v-show="$store.state.ADM" small round color="red" class="float-right" push>
           <q-icon name="delete" />
         </q-btn>
       </div>
     </div>
 
-    <q-btn @click="criaJogo" v-show="$store.state.ADM" round color="green" push class="absolute-bottom-right" style="margin:10px; font-size: 40px;">
+    <q-btn @click.prevent="criaJogo" v-show="$store.state.ADM" round color="green" push class="absolute-bottom-right" style="margin:10px; font-size: 40px;">
       +
     </q-btn>
     
@@ -147,9 +147,7 @@ export default {
       return (id % 2 === 0) ? 'primary' : 'secondary'
     },
     redireciona (id) {
-      return setTimeout(() => {
-        this.$router.push('/jogo/' + id)
-      }, 175)
+      this.$router.push('/jogo/' + id)
     },
     getJogos (tipo) {
       let num
